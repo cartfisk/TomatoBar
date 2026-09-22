@@ -78,6 +78,16 @@ private struct SettingsView: View {
                 .onChange(of: timer.showTimerInMenuBar) { _ in
                     timer.updateTimeLeft()
                 }
+            Toggle(isOn: $timer.showSecondsInMenuBar) {
+                Text(NSLocalizedString("SettingsView.showSecondsInMenuBar.label",
+                                       comment: "Show seconds in menu bar label"))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }.toggleStyle(.switch)
+                .padding(.leading, 16)
+                .disabled(!timer.showTimerInMenuBar)
+                .onChange(of: timer.showSecondsInMenuBar) { _ in
+                    timer.updateTimeLeft()
+                }
             Toggle(isOn: $launchAtLogin.isEnabled) {
                 Text(NSLocalizedString("SettingsView.launchAtLogin.label",
                                        comment: "Launch at login label"))
