@@ -306,20 +306,27 @@ struct TBPopoverView: View {
                     NSApp.activate(ignoringOtherApps: true)
                     NSApp.orderFrontStandardAboutPanel()
                 } label: {
-                    Text(NSLocalizedString("TBPopoverView.about.label",
-                                           comment: "About label"))
-                    Spacer()
-                    Text("⌘ A").foregroundColor(Color.gray)
+                    HStack {
+                        Text(NSLocalizedString("TBPopoverView.about.label",
+                                               comment: "About label"))
+                        Spacer()
+                        Text("⌘ A").foregroundColor(Color.gray)
+                    }
+                    /* Plain buttons only hit-test drawn content; include the Spacer gap */
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut("a")
                 Button {
                     NSApplication.shared.terminate(self)
                 } label: {
-                    Text(NSLocalizedString("TBPopoverView.quit.label",
-                                           comment: "Quit label"))
-                    Spacer()
-                    Text("⌘ Q").foregroundColor(Color.gray)
+                    HStack {
+                        Text(NSLocalizedString("TBPopoverView.quit.label",
+                                               comment: "Quit label"))
+                        Spacer()
+                        Text("⌘ Q").foregroundColor(Color.gray)
+                    }
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut("q")
