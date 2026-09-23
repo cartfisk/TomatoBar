@@ -12,7 +12,7 @@
 "SoundsView.isWindupEnabled.label" = "Windup";
 "SoundsView.isDingEnabled.label" = "Ding";
 "SoundsView.isTickingEnabled.label" = "Ticking";
-"SoundsView.defaultSound.label" = "TomatoBar";
+"SoundsView.defaultSound.label" = "Default";
 "SoundsView.chooseSound.help" = "Choose sound file…";
 "SoundsView.resetSound.help" = "Use default sound";
 "TBPopoverView.start.label" = "Start";
