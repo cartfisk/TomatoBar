@@ -174,13 +174,21 @@ struct TBPopoverView: View {
             .pickerStyle(.segmented)
 
             GroupBox {
-                switch activeChildView {
-                case .intervals:
-                    IntervalsView().environmentObject(timer)
-                case .settings:
-                    SettingsView().environmentObject(timer)
-                case .sounds:
-                    SoundsView().environmentObject(timer.player)
+                if #available(macOS 13.0, *) {
+                    childView(activeChildView)
+                } else {
+                    /*
+                     Popover can't resize before macOS 13, so keep every tab in
+                     the layout to size it to the tallest, showing only the active one
+                     */
+                    ZStack(alignment: .top) {
+                        ForEach([ChildView.intervals, .settings, .sounds], id: \.self) { child in
+                            childView(child)
+                                .opacity(child == activeChildView ? 1 : 0)
+                                .allowsHitTesting(child == activeChildView)
+                                .accessibilityHidden(child != activeChildView)
+                        }
+                    }
                 }
             }
 
@@ -208,29 +216,19 @@ struct TBPopoverView: View {
                 .keyboardShortcut("q")
             }
         }
-        #if DEBUG
-            /*
-             After several hours of Googling and trying various StackOverflow
-             recipes I still haven't figured a reliable way to auto resize
-             popover to fit all it's contents (pull requests are welcome!).
-             The following code block is used to determine the optimal
-             geometry of the popover.
-             */
-            .overlay(
-                GeometryReader { proxy in
-                    debugSize(proxy: proxy)
-                }
-            )
-        #endif
-            /* Use values from GeometryReader */
-//            .frame(width: 240, height: 276)
-            .padding(12)
+        .padding(12)
+        .frame(width: 240)
+    }
+
+    @ViewBuilder
+    private func childView(_ child: ChildView) -> some View {
+        switch child {
+        case .intervals:
+            IntervalsView().environmentObject(timer)
+        case .settings:
+            SettingsView().environmentObject(timer)
+        case .sounds:
+            SoundsView().environmentObject(timer.player)
+        }
     }
 }
-
-#if DEBUG
-    func debugSize(proxy: GeometryProxy) -> some View {
-        print("Optimal popover size:", proxy.size)
-        return Color.clear
-    }
-#endif
