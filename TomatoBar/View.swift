@@ -143,13 +143,26 @@ private struct SettingsView: View {
 private struct VolumeSlider: View {
     @Binding var volume: Double
 
+    private var level: Int {
+        Int((volume * 5).rounded())
+    }
+
     var body: some View {
         /* Shown as 0-10; 5 is the sound's natural loudness */
-        Slider(value: $volume, in: 0...2, step: 0.2) {
-            Text("\(Int((volume * 5).rounded()))")
-        }.gesture(TapGesture(count: 2).onEnded({
-            volume = 1.0
-        }))
+        HStack(spacing: 4) {
+            /* Fixed widths so the track doesn't shift with the icon or between 9 and 10 */
+            Image(systemName: level == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                .foregroundColor(.secondary)
+                .frame(width: 20, alignment: .leading)
+                .accessibilityHidden(true)
+            Text("\(level)")
+                .frame(width: 20, alignment: .center)
+            Slider(value: $volume, in: 0...2, step: 0.2)
+                .labelsHidden()
+                .gesture(TapGesture(count: 2).onEnded({
+                    volume = 1.0
+                }))
+        }
     }
 }
 
@@ -333,7 +346,15 @@ struct TBPopoverView: View {
             }
         }
         .padding(12)
-        .frame(width: 240)
+        .frame(width: popoverWidth)
+    }
+
+    /* macOS 26 controls are larger; at 240pt rows overflow and labels truncate */
+    private var popoverWidth: CGFloat {
+        if #available(macOS 26.0, *) {
+            return 280
+        }
+        return 240
     }
 
     @ViewBuilder
