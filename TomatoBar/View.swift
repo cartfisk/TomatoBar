@@ -83,7 +83,7 @@ private struct IntervalsView: View {
             .help(NSLocalizedString("IntervalsView.longRestIntervalLength.help",
                                     comment: "Long rest interval hint"))
             NumericStepperRow(title: NSLocalizedString("IntervalsView.workIntervalsInSet.label",
-                                                       comment: "Work intervals in a set label"),
+                                                       comment: "Work intervals per set label"),
                               suffix: nil,
                               range: 1 ... 10,
                               value: $timer.workIntervalsInSet)
