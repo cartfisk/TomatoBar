@@ -127,6 +127,8 @@ class TBTimer: ObservableObject {
     }
 
     func updateTimeLeft() {
+        /* No timer has run yet (e.g. a setting was toggled right after launch) */
+        guard finishTime != nil else { return }
         timeLeftString = timerFormatter.string(from: Date(), to: finishTime)!
         if timer != nil, showTimerInMenuBar {
             TBStatusItem.shared.setTitle(title: showSecondsInMenuBar ? timeLeftString : minutesLeftString())
