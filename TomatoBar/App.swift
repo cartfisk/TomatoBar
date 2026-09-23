@@ -79,6 +79,17 @@ class TBStatusItem: NSObject, NSApplicationDelegate {
         popover.performClose(sender)
     }
 
+    /* Keeps the transient popover from closing while a modal panel is key */
+    func runModalKeepingPopover(_ panel: NSSavePanel) -> NSApplication.ModalResponse {
+        popover.behavior = .applicationDefined
+        defer {
+            popover.behavior = .transient
+            popover.contentViewController?.view.window?.makeKey()
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        return panel.runModal()
+    }
+
     @objc func togglePopover(_ sender: AnyObject?) {
         if popover.isShown {
             closePopover(sender)

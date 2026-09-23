@@ -13,6 +13,9 @@
 "SoundsView.isWindupEnabled.label" = "发条声";
 "SoundsView.isDingEnabled.label" = "叮";
 "SoundsView.isTickingEnabled.label" = "滴答声";
+"SoundsView.defaultSound.label" = "默认";
+"SoundsView.chooseSound.help" = "选择声音文件…";
+"SoundsView.resetSound.help" = "使用默认声音";
 "TBPopoverView.start.label" = "开始";
 "TBPopoverView.stop.label" = "停止";
 "TBPopoverView.intervals.label" = "时长";
