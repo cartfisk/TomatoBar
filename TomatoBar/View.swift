@@ -1,6 +1,7 @@
 import KeyboardShortcuts
 import LaunchAtLogin
 import SwiftUI
+import UniformTypeIdentifiers
 
 extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
@@ -111,26 +112,83 @@ private struct VolumeSlider: View {
     }
 }
 
+private struct SoundRow: View {
+    @EnvironmentObject var player: TBPlayer
+    let sound: TBSound
+    let label: String
+    @Binding var volume: Double
+
+    private func chooseFile() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.audio]
+        panel.directoryURL = player.customSoundURL(sound)?.deletingLastPathComponent()
+            ?? URL(fileURLWithPath: "/System/Library/Sounds")
+        if TBStatusItem.shared.runModalKeepingPopover(panel) == .OK, let url = panel.url {
+            player.setCustomSound(sound, url: url)
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(label)
+                Spacer()
+                Text(player.customSoundNames[sound] ??
+                     NSLocalizedString("SoundsView.defaultSound.label", comment: "Default sound name"))
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .foregroundColor(.secondary)
+                if player.customSoundNames[sound] != nil {
+                    Button {
+                        player.resetSound(sound)
+                    } label: {
+                        Image(systemName: "arrow.counterclockwise")
+                    }
+                    .buttonStyle(.borderless)
+                    .help(NSLocalizedString("SoundsView.resetSound.help", comment: "Use default sound hint"))
+                    .accessibilityLabel(NSLocalizedString("SoundsView.resetSound.help",
+                                                          comment: "Use default sound hint"))
+                }
+                Button {
+                    chooseFile()
+                } label: {
+                    Image(systemName: "folder")
+                }
+                .buttonStyle(.borderless)
+                .help(NSLocalizedString("SoundsView.chooseSound.help", comment: "Choose sound file hint"))
+                .accessibilityLabel(NSLocalizedString("SoundsView.chooseSound.help",
+                                                      comment: "Choose sound file hint"))
+            }
+            VolumeSlider(volume: $volume)
+        }
+    }
+}
+
 private struct SoundsView: View {
     @EnvironmentObject var player: TBPlayer
 
-    private var columns = [
-        GridItem(.flexible()),
-        GridItem(.fixed(110))
-    ]
-
     var body: some View {
-        LazyVGrid(columns: columns, alignment: .leading, spacing: 4) {
-            Text(NSLocalizedString("SoundsView.isWindupEnabled.label",
-                                   comment: "Windup label"))
-            VolumeSlider(volume: $player.windupVolume)
-            Text(NSLocalizedString("SoundsView.isDingEnabled.label",
-                                   comment: "Ding label"))
-            VolumeSlider(volume: $player.dingVolume)
-            Text(NSLocalizedString("SoundsView.isTickingEnabled.label",
-                                   comment: "Ticking label"))
-            VolumeSlider(volume: $player.tickingVolume)
-        }.padding(4)
+        VStack(spacing: 8) {
+            SoundRow(sound: .windup,
+                     label: NSLocalizedString("SoundsView.isWindupEnabled.label",
+                                              comment: "Windup label"),
+                     volume: $player.windupVolume)
+            SoundRow(sound: .ding,
+                     label: NSLocalizedString("SoundsView.isDingEnabled.label",
+                                              comment: "Ding label"),
+                     volume: $player.dingVolume)
+            SoundRow(sound: .ticking,
+                     label: NSLocalizedString("SoundsView.isTickingEnabled.label",
+                                              comment: "Ticking label"),
+                     volume: $player.tickingVolume)
+        }
+        .padding(4)
+        .onDisappear {
+            player.stopPreview()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSPopover.didCloseNotification)) { _ in
+            player.stopPreview()
+        }
         Spacer().frame(minHeight: 0)
     }
 }
