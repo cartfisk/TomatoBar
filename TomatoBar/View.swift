@@ -7,46 +7,86 @@ extension KeyboardShortcuts.Name {
     static let startStopTimer = Self("startStopTimer")
 }
 
+private extension Binding where Value == Int {
+    func clamped(to range: ClosedRange<Int>) -> Binding<Int> {
+        Binding {
+            wrappedValue
+        } set: { newValue in
+            wrappedValue = Swift.min(Swift.max(newValue, range.lowerBound), range.upperBound)
+        }
+    }
+}
+
+private struct NumericStepperRow: View {
+    let title: String
+    let suffix: String?
+    let range: ClosedRange<Int>
+    @Binding var value: Int
+
+    private var formatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.allowsFloats = false
+        formatter.minimum = NSNumber(value: range.lowerBound)
+        formatter.maximum = NSNumber(value: range.upperBound)
+        formatter.numberStyle = .none
+        return formatter
+    }
+
+    private var validatedValue: Binding<Int> {
+        $value.clamped(to: range)
+    }
+
+    var body: some View {
+        Stepper(value: validatedValue, in: range) {
+            HStack {
+                Text(title)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                HStack(spacing: 3) {
+                    TextField("", value: validatedValue, formatter: formatter)
+                        .multilineTextAlignment(.trailing)
+                        .font(.system(.body).monospacedDigit())
+                        .frame(width: 32)
+                    if let suffix {
+                        Text(suffix)
+                    }
+                }
+                .accessibilityLabel(title)
+            }
+        }
+    }
+}
+
 private struct IntervalsView: View {
     @EnvironmentObject var timer: TBTimer
     private var minStr = NSLocalizedString("IntervalsView.min", comment: "min")
+    private var minSuffix: String {
+        String.localizedStringWithFormat(minStr, 0).replacingOccurrences(of: "0", with: "").trimmingCharacters(in: .whitespaces)
+    }
 
     var body: some View {
         VStack {
-            Stepper(value: $timer.workIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.workIntervalLength.label",
-                                           comment: "Work interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.workIntervalLength))
-                }
-            }
-            Stepper(value: $timer.shortRestIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.shortRestIntervalLength.label",
-                                           comment: "Short rest interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.shortRestIntervalLength))
-                }
-            }
-            Stepper(value: $timer.longRestIntervalLength, in: 1 ... 60) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.longRestIntervalLength.label",
-                                           comment: "Long rest interval label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(String.localizedStringWithFormat(minStr, timer.longRestIntervalLength))
-                }
-            }
+            NumericStepperRow(title: NSLocalizedString("IntervalsView.workIntervalLength.label",
+                                                       comment: "Work interval label"),
+                              suffix: minSuffix,
+                              range: 1 ... 60,
+                              value: $timer.workIntervalLength)
+            NumericStepperRow(title: NSLocalizedString("IntervalsView.shortRestIntervalLength.label",
+                                                       comment: "Short rest interval label"),
+                              suffix: minSuffix,
+                              range: 1 ... 60,
+                              value: $timer.shortRestIntervalLength)
+            NumericStepperRow(title: NSLocalizedString("IntervalsView.longRestIntervalLength.label",
+                                                       comment: "Long rest interval label"),
+                              suffix: minSuffix,
+                              range: 1 ... 60,
+                              value: $timer.longRestIntervalLength)
             .help(NSLocalizedString("IntervalsView.longRestIntervalLength.help",
                                     comment: "Long rest interval hint"))
-            Stepper(value: $timer.workIntervalsInSet, in: 1 ... 10) {
-                HStack {
-                    Text(NSLocalizedString("IntervalsView.workIntervalsInSet.label",
-                                           comment: "Work intervals in a set label"))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text("\(timer.workIntervalsInSet)")
-                }
-            }
+            NumericStepperRow(title: NSLocalizedString("IntervalsView.workIntervalsInSet.label",
+                                                       comment: "Work intervals in a set label"),
+                              suffix: nil,
+                              range: 1 ... 10,
+                              value: $timer.workIntervalsInSet)
             .help(NSLocalizedString("IntervalsView.workIntervalsInSet.help",
                                     comment: "Work intervals in set hint"))
             Spacer().frame(minHeight: 0)
