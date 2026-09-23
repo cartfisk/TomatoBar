@@ -144,8 +144,9 @@ private struct VolumeSlider: View {
     @Binding var volume: Double
 
     var body: some View {
-        Slider(value: $volume, in: 0...2) {
-            Text(String(format: "%.1f", volume))
+        /* Shown as 0-10; 5 is the sound's natural loudness */
+        Slider(value: $volume, in: 0...2, step: 0.2) {
+            Text("\(Int((volume * 5).rounded()))")
         }.gesture(TapGesture(count: 2).onEnded({
             volume = 1.0
         }))
